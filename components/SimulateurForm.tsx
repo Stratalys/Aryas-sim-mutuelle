@@ -282,14 +282,17 @@ export default function SimulateurForm() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
+    <div className={`w-full mx-auto ${!resultat ? 'max-w-2xl' : 'max-w-6xl'}`}>
       {/* 
         NOTE: Le message de confirmation de chargement ("Chargement réussi - X actes disponibles - X types de soins")
         a été supprimé car c'était un message de débogage pour Vercel et n'est plus nécessaire en production.
         Le formulaire s'affiche directement sans message de confirmation.
       */}
-      {/* Formulaire de simulation */}
-      <div className="bg-white rounded-xl shadow-md p-6">
+      {/* Layout dynamique : Centré sans résultats, deux colonnes avec résultats */}
+      <div className={`flex flex-col ${!resultat ? 'justify-center' : 'lg:flex-row gap-8'}`}>
+        {/* Colonne gauche : Formulaire de simulation */}
+        <div className={resultat ? 'lg:w-5/12' : 'w-full'}>
+          <div className="bg-white rounded-xl shadow-md p-6">
         <h2 className="text-xl font-nikkei font-bold text-bleu-cobalt mb-6">
           Votre simulation
         </h2>
@@ -579,48 +582,51 @@ export default function SimulateurForm() {
             Calculer le remboursement
           </button>
         </div>
-      </div>
-
-      {/* Carte de résultat */}
-      {resultat && (
-        <div className="bg-bleu-turquin rounded-xl shadow-md p-6">
-          <h3 className="text-xl font-nikkei font-bold text-white mb-4">
-            Résultat de votre simulation
-          </h3>
-          <div className="space-y-0">
-            <div className="flex justify-between items-center border-b border-white/30 pb-3 mb-3">
-              <span className="text-white">Remboursement A.M. :</span>
-              <span className="text-white font-semibold">{formatEuro(resultat.remboursementAm)}</span>
-            </div>
-            <div className="flex justify-between items-center border-b border-white/30 pb-3 mb-3">
-              <span className="text-white">Remboursement Mutuelle :</span>
-              <span className="text-white font-semibold">{formatEuro(resultat.remboursementMutuelle)}</span>
-            </div>
-            <div className="flex justify-between items-center pt-2">
-              <span className="text-white font-semibold">Reste à votre charge :</span>
-              <span className="text-ambre font-bold text-2xl">{formatEuro(resultat.resteACharge)}</span>
-            </div>
           </div>
         </div>
-      )}
 
-      {/* CTA Section */}
-      {resultat && (
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-xl font-nikkei font-bold text-bleu-cobalt mb-3 text-center">
-            Besoin d&apos;une meilleure couverture ?
-          </h3>
-          <p className="text-bleu-turquin mb-4 leading-relaxed">
-            Si votre reste à charge vous semble trop élevé, il est peut-être temps d&apos;analyser votre contrat. Je peux vous aider à trouver une solution plus adaptée à vos besoins.
-          </p>
-          <button
-            onClick={handleOpenModal}
-            className="bg-ambre text-chocolat font-semibold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors w-full"
-          >
-            Analyser ma couverture
-          </button>
-        </div>
-      )}
+        {/* Colonne droite : Résultats et CTA */}
+        {resultat && (
+          <div className="lg:w-7/12 flex-shrink-0 space-y-6">
+            {/* Carte de résultat */}
+            <div className="bg-bleu-turquin rounded-xl shadow-md p-5">
+              <h3 className="text-2xl font-nikkei font-bold text-white mb-4">
+                Résultat de votre simulation
+              </h3>
+              <div className="space-y-0">
+                <div className="flex justify-between items-center border-b border-white/30 pb-3 mb-3">
+                  <span className="text-white text-base">Remboursement A.M. :</span>
+                  <span className="text-white font-semibold text-lg">{formatEuro(resultat.remboursementAm)}</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/30 pb-3 mb-3">
+                  <span className="text-white text-base">Remboursement Mutuelle :</span>
+                  <span className="text-white font-semibold text-lg">{formatEuro(resultat.remboursementMutuelle)}</span>
+                </div>
+                <div className="flex justify-between items-center pt-3">
+                  <span className="text-white font-semibold text-lg">Reste à votre charge :</span>
+                  <span className="text-ambre font-bold text-4xl">{formatEuro(resultat.resteACharge)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Section */}
+            <div className="bg-white rounded-xl shadow-md p-5">
+              <h3 className="text-2xl font-nikkei font-bold text-bleu-cobalt mb-3 text-center">
+                Besoin d&apos;une meilleure couverture ?
+              </h3>
+              <p className="text-bleu-turquin mb-4 leading-relaxed text-base">
+                Si votre reste à charge vous semble trop élevé, il est peut-être temps d&apos;analyser votre contrat. Je peux vous aider à trouver une solution plus adaptée à vos besoins.
+              </p>
+              <button
+                onClick={handleOpenModal}
+                className="bg-ambre text-chocolat font-semibold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors w-full"
+              >
+                Analyser ma couverture
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Modal de formulaire */}
       {isModalOpen && (
