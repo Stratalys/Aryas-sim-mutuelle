@@ -2,9 +2,11 @@ import { supabase } from './client';
 
 export interface DonneesLead {
   nom_prospect: string;
+  prenom?: string;
   email: string;
   telephone?: string;
   metier?: string;
+  message?: string;
   acte_simule: string;
   prix_paye: number;
   reste_a_charge: number;
@@ -22,9 +24,11 @@ export async function sauvegarderLead(donnees: DonneesLead) {
       .insert([
         {
           nom_prospect: donnees.nom_prospect,
+          prenom: donnees.prenom || null,
           email: donnees.email,
           telephone: donnees.telephone || null,
           metier: donnees.metier || null,
+          message: donnees.message || null,
           acte_simule: donnees.acte_simule,
           prix_paye: donnees.prix_paye,
           reste_a_charge: donnees.reste_a_charge,

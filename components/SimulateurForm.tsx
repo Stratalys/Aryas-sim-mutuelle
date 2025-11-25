@@ -135,17 +135,14 @@ export default function SimulateurForm() {
     setSubmitMessage(null);
 
     try {
-      // Construire le nom complet (nom + prénom)
-      const nomComplet = formData.prenom 
-        ? `${formData.nom} ${formData.prenom}`.trim()
-        : formData.nom;
-
       // Préparer les données pour Supabase
       const donneesLead = {
-        nom_prospect: nomComplet,
+        nom_prospect: formData.nom,
+        prenom: formData.prenom || undefined,
         email: formData.email,
         telephone: formData.telephone || undefined,
         metier: formData.metier || undefined,
+        message: formData.message || undefined,
         acte_simule: acteSelectionne.nom,
         prix_paye: parseFloat(prixPaye),
         reste_a_charge: resultat.resteACharge,
