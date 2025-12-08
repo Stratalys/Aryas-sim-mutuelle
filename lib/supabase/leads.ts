@@ -19,7 +19,7 @@ export interface DonneesLead {
  */
 export async function sauvegarderLead(donnees: DonneesLead) {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('prospects_mutuelle')
       .insert([
         {
@@ -33,16 +33,15 @@ export async function sauvegarderLead(donnees: DonneesLead) {
           prix_paye: donnees.prix_paye,
           reste_a_charge: donnees.reste_a_charge,
         },
-      ])
-      .select();
+      ]);
 
     if (error) {
       console.error('Erreur lors de la sauvegarde du lead:', error);
       throw error;
     }
 
-    console.log('Lead sauvegardé avec succès:', data);
-    return { success: true, data };
+    console.log('Lead sauvegardé avec succès');
+    return { success: true };
   } catch (error: any) {
     console.error('Erreur complète lors de la sauvegarde du lead:', error);
     throw error;
