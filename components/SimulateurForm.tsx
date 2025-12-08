@@ -294,6 +294,12 @@ export default function SimulateurForm() {
           Votre simulation
         </h2>
 
+        <div className="bg-baby-blue/20 border-l-4 border-bleu-cobalt rounded-md p-3 mb-6">
+          <p className="text-sm text-bleu-turquin font-open">
+            <span className="font-semibold">ℹ️ Information :</span> Ce simulateur fournit une estimation indicative et ne remplace pas l&apos;avis d&apos;un professionnel de santé ou d&apos;un conseiller en assurance.
+          </p>
+        </div>
+
         <div className="space-y-5">
           {/* 1. Type de Soin */}
           <div>
@@ -612,7 +618,7 @@ export default function SimulateurForm() {
                 Besoin d&apos;une meilleure couverture ?
               </h3>
               <p className="text-bleu-turquin mb-4 leading-relaxed text-base">
-                Si votre reste à charge vous semble trop élevé, il est peut-être temps d&apos;analyser votre contrat. Je peux vous aider à trouver une solution plus adaptée à vos besoins.
+                Si votre reste à charge vous semble trop élevé, il est peut-être temps d&apos;analyser votre contrat. Avec Aryas nous vous aidons à trouver une solution plus adaptée à vos besoins.
               </p>
               <button
                 onClick={handleOpenModal}
