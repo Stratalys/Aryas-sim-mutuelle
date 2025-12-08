@@ -770,6 +770,13 @@ export default function SimulateurForm() {
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <div className="mt-8 pt-6 border-t border-baby-blue/30">
+        <p className="text-center text-sm text-bleu-turquin font-open">
+          Fait par <span className="font-semibold text-bleu-cobalt">Stratalys</span>
+        </p>
+      </div>
     </div>
   );
 }

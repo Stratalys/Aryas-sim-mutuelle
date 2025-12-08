@@ -23,7 +23,13 @@ export function calculerResteACharge(
 ): ResultatCalcul {
   // Montant Remboursé par l'Assurance Maladie
   // R_am = (BSS × T_am) - PF
-  const R_am = (bss * tauxRemboursementAm) - partForfaitaire;
+  let R_am = (bss * tauxRemboursementAm) - partForfaitaire;
+  
+  // Le remboursement AM ne peut pas être négatif
+  R_am = Math.max(0, R_am);
+  
+  // Le remboursement AM ne peut pas dépasser le prix payé
+  R_am = Math.min(R_am, prixPaye);
 
   // Plafond de Remboursement par la Mutuelle
   // Plafond_mut = (BSS × (tauxCouvertureMutuelle / 100)) - R_am
@@ -32,14 +38,20 @@ export function calculerResteACharge(
   // Montant Remboursé par la Mutuelle
   // R_mut = min((P_payé - R_am), Plafond_mut)
   // Note: La PF est déjà incluse dans R_am, donc on ne la déduit pas à nouveau
-  const R_mut = Math.min(
+  let R_mut = Math.min(
     prixPaye - R_am,
     Plafond_mut
   );
+  
+  // Le remboursement mutuelle ne peut pas être négatif
+  R_mut = Math.max(0, R_mut);
 
   // Reste à Charge Final
   // RAC_final = P_payé - R_am - R_mut
-  const RAC = prixPaye - R_am - R_mut;
+  let RAC = prixPaye - R_am - R_mut;
+  
+  // Le reste à charge ne peut pas être négatif (mais peut être 0)
+  RAC = Math.max(0, RAC);
 
   // Arrondir à 2 décimales
   return {
