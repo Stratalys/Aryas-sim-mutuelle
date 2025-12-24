@@ -278,17 +278,32 @@ export default function SimulateurForm() {
     );
   }
 
+  // Fonction pour réinitialiser et refaire une simulation
+  const handleRefaireSimulation = () => {
+    setResultat(null);
+    setActeSelectionne(null);
+    setSelectedTypeDeSoin('');
+    setPrixPaye('80');
+    setTauxCouvertureMutuelle(300);
+    setTauxMutuelleManuel(false);
+    setTauxMutuelleManuelValue('');
+    setSaisieManuelle(false);
+    setBssManuel('');
+    setTauxAMManuel('');
+    setPartForfaitaireManuel('');
+  };
+
   return (
-    <div className={`w-full mx-auto ${!resultat ? 'max-w-2xl' : 'max-w-6xl'}`}>
+    <div className={`w-full mx-auto ${!resultat ? 'max-w-2xl' : 'max-w-4xl'}`}>
       {/* 
         NOTE: Le message de confirmation de chargement ("Chargement réussi - X actes disponibles - X types de soins")
         a été supprimé car c'était un message de débogage pour Vercel et n'est plus nécessaire en production.
         Le formulaire s'affiche directement sans message de confirmation.
       */}
-      {/* Layout dynamique : Centré sans résultats, deux colonnes avec résultats */}
-      <div className={`flex flex-col ${!resultat ? 'justify-center' : 'lg:flex-row gap-8'}`}>
-        {/* Colonne gauche : Formulaire de simulation */}
-        <div className={resultat ? 'lg:w-5/12' : 'w-full'}>
+      {/* Layout dynamique : Formulaire OU Résultats */}
+      {!resultat ? (
+        /* Formulaire de simulation - Affiché seulement s'il n'y a pas de résultat */
+        <div className="w-full">
           <div className="bg-white rounded-xl shadow-md p-6">
         <h2 className="text-xl font-nikkei font-bold text-bleu-cobalt mb-6">
           Votre simulation
@@ -587,10 +602,9 @@ export default function SimulateurForm() {
         </div>
           </div>
         </div>
-
-        {/* Colonne droite : Résultats et CTA */}
-        {resultat && (
-          <div className="lg:w-7/12 flex-shrink-0 space-y-6">
+      ) : (
+        /* Résultats et CTA - Affichés seulement s'il y a un résultat */
+        <div className="w-full space-y-6">
             {/* Carte de résultat */}
             <div className="bg-bleu-turquin rounded-xl shadow-md p-5">
               <h3 className="text-2xl font-nikkei font-bold text-white mb-4">
@@ -622,14 +636,19 @@ export default function SimulateurForm() {
               </p>
               <button
                 onClick={handleOpenModal}
-                className="bg-ambre text-chocolat font-semibold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors w-full"
+                className="bg-ambre text-chocolat font-semibold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors w-full mb-3"
               >
                 Analyser ma couverture
               </button>
+              <button
+                onClick={handleRefaireSimulation}
+                className="w-full bg-gray-200 text-bleu-turquin font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Refaire une simulation
+              </button>
             </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modal de formulaire */}
       {isModalOpen && (
