@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulateur de Remboursement Mutuelle</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Configuration Tailwind avec les couleurs du brandbook
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'bleu-cobalt': '#506EF9',
+            'bleu-turquin': '#394869',
+            'baby-blue': '#8DADBE',
+            'chocolat': '#381D01',
+            'ambre': '#F2BA05',
+            'lin': '#F2EADA',
+          },
+          fontFamily: {
+            nikkei: ['Arial', 'sans-serif'],
+            open: ['Arial', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      background: transparent;
+      font-family: Arial, sans-serif;
+    }
+    /* Assurer que les selects ont la bonne couleur de texte */
+    select {
+      color: #394869 !important;
+      background-color: white !important;
+    }
+    select option {
+      color: #394869 !important;
+      background-color: white !important;
+    }
+    /* Cacher la scrollbar */
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="bg-transparent">
+  <div id="simulateur-container" class="w-full mx-auto max-w-2xl">
+    <!-- Layout dynamique : Centré sans résultats, deux colonnes avec résultats -->
+    <div id="layout-container" class="flex flex-col justify-center">
+      <!-- Colonne gauche : Formulaire de simulation -->
+      <div id="form-column" class="w-full">
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <h2 class="text-xl font-bold text-bleu-cobalt mb-6" style="font-family: Arial, sans-serif;">
+            Votre simulation
+          </h2>
+
+          <div class="bg-baby-blue/20 border-l-4 border-bleu-cobalt rounded-md p-3 mb-6">
+            <p class="text-sm text-bleu-turquin" style="font-family: Arial, sans-serif;">
+              <span class="font-semibold">ℹ️ Information :</span> Ce simulateur fournit une estimation indicative et ne remplace pas l'avis d'un professionnel de santé ou d'un conseiller en assurance.
+            </p>
+          </div>
+
+          <div class="space-y-5">
+            <!-- 1. Type de Soin -->
+            <div>
+              <label for="type-de-soin" class="block text-sm font-medium text-bleu-turquin mb-2">
+                1. Choisissez le Type de Soin:
+              </label>
+              <select
+                id="type-de-soin"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-bleu-cobalt focus:border-transparent text-bleu-turquin bg-white"
+              >
+                <option value="" class="text-bleu-turquin">Sélectionnez un type de soin</option>
+              </select>
+            </div>
+
+            <!-- 2. Prestation Spécifique -->
+            <div id="prestation-container" class="hidden">
+              <label for="acte" class="block text-sm font-medium text-bleu-turquin mb-2">
+                2. Choisissez la Prestation:
+              </label>
+              <select
+                id="acte"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-bleu-cobalt focus:border-transparent text-bleu-turquin bg-white"
+              >
+                <option value="" class="text-bleu-turquin">Sélectionnez une prestation</option>
+              </select>
+            </div>
+
+            <!-- Checkbox pour saisie manuelle -->
+            <div id="checkbox-manuel-container" class="hidden flex items-center">
+              <input
+                type="checkbox"
+                id="saisie-manuelle"
+                class="mr-2 w-4 h-4 text-bleu-cobalt border-gray-300 rounded focus:ring-bleu-cobalt"
+              />
+              <label for="saisie-manuelle" class="text-sm text-bleu-turquin cursor-pointer">
+                Saisir manuellement la base de remboursement
+              </label>
+            </div>
+
+            <!-- Bloc d'informations de remboursement - Affichage automatique -->
+            <div id="info-remboursement" class="hidden bg-lin rounded-md p-4 space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-bleu-turquin">Base de remboursement (BSS):</span>
+                <span id="bss-display" class="text-sm font-semibold text-bleu-turquin"></span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-bleu-turquin">Taux de remboursement AM:</span>
+                <span id="taux-am-display" class="text-sm font-semibold text-bleu-turquin"></span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-bleu-turquin">Participation forfaitaire:</span>
+                <span id="part-forfaitaire-display" class="text-sm font-semibold text-bleu-turquin"></span>
+              </div>
+            </div>
+
+            <!-- Bloc de saisie manuelle -->
+            <div id="saisie-manuelle-container" class="hidden bg-lin rounded-md p-4 space-y-4">
+              <div>
+                <label for="bss-manuel" class="block text-sm font-semibold text-bleu-turquin mb-2">
+                  Base de remboursement (BSS) (€):
+                </label>
+                <input
+                  type="number"
+                  id="bss-manuel"
+                  placeholder="Ex: 26.50"
+                  min="0"
+                  step="0.01"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-bleu-cobalt focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label for="taux-am-manuel" class="block text-sm font-semibold text-bleu-turquin mb-2">
+                  Taux de l'A.M. (%):
+                </label>
+                <input
+                  type="number"
+                  id="taux-am-manuel"
+                  placeholder="Ex: 70"
+                  min="0"
+                  max="100"
+                  step="1"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-bleu-cobalt focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label for="part-forfaitaire-manuel" class="block text-sm font-semibold text-bleu-turquin mb-2">
+                  Participation forfaitaire (€) (Optionnel):
+                </label>
+                <input
+                  type="number"
+                  id="part-forfaitaire-manuel"
+                  placeholder="Ex: 2.00"
+                  min="0"
+                  step="0.01"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-bleu-cobalt focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <!-- Coût réel -->
+            <div id="prix-container" class="hidden">
+              <label for="prix" class="block text-sm font-medium text-bleu-turquin mb-2">
+                Coût Réel de l'acte (€):
+              </label>
+              <input
+                type="number"
+                id="prix"
+                value="80"
+                min="0"
+                step="0.01"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-bleu-cobalt focus:border-transparent"
+              />
+            </div>
+
+            <!-- Taux de mutuelle -->
+            <div id="taux-mutuelle-container" class="hidden">
+              <label for="taux-mutuelle" class="block text-sm font-medium text-bleu-turquin mb-2">
+                Taux de votre mutuelle (% BSS):
+              </label>
+              <select
+                id="taux-mutuelle"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-bleu-cobalt focus:border-transparent"
+              >
+                <option value="100">100%</option>
+                <option value="150">150%</option>
+                <option value="200">200%</option>
+                <option value="250">250%</option>
+                <option value="300" selected>300%</option>
+                <option value="manuel">Saisir manuellement</option>
+              </select>
+              <div id="taux-mutuelle-manuel-container" class="hidden mt-3">
+                <label for="taux-mutuelle-manuel" class="block text-sm font-medium text-bleu-turquin mb-2">
+                  Taux de mutuelle (% BSS):
+                </label>
+                <input
+                  type="number"
+                  id="taux-mutuelle-manuel"
+                  placeholder="Ex: 325"
+                  min="0"
+                  step="1"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-bleu-cobalt focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <!-- Bouton Calculer -->
+            <button
+              id="btn-calculer"
+              class="hidden w-full bg-bleu-cobalt text-white font-semibold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors"
+            >
+              Calculer le remboursement
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonne droite : Résultats et CTA -->
+      <div id="result-column" class="hidden lg:w-7/12 flex-shrink-0 space-y-6">
+        <!-- Carte de résultat -->
+        <div class="bg-bleu-turquin rounded-xl shadow-md p-5">
+          <h3 class="text-2xl font-bold text-white mb-4" style="font-family: Arial, sans-serif;">
+            Résultat de votre simulation
+          </h3>
+          <div class="space-y-0">
+            <div class="flex justify-between items-center border-b border-white/30 pb-3 mb-3">
+              <span class="text-white text-base">Remboursement A.M. :</span>
+              <span id="result-remb-am" class="text-white font-semibold text-lg"></span>
+            </div>
+            <div class="flex justify-between items-center border-b border-white/30 pb-3 mb-3">
+              <span class="text-white text-base">Remboursement Mutuelle :</span>
+              <span id="result-remb-mut" class="text-white font-semibold text-lg"></span>
+            </div>
+            <div class="flex justify-between items-center pt-3">
+              <span class="text-white font-semibold text-lg">Reste à votre charge :</span>
+              <span id="result-reste-charge" class="text-ambre font-bold text-4xl"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="bg-white rounded-xl shadow-md p-5">
+          <h3 class="text-2xl font-bold text-bleu-cobalt mb-3 text-center" style="font-family: Arial, sans-serif;">
+            Besoin d'une meilleure couverture ?
+          </h3>
+          <p class="text-bleu-turquin mb-4 leading-relaxed text-base">
+            Si votre reste à charge vous semble trop élevé, il est peut-être temps d'analyser votre contrat. Avec Aryas nous vous aidons à trouver une solution plus adaptée à vos besoins.
+          </p>
+          <button
+            id="btn-cta"
+            class="bg-ambre text-chocolat font-semibold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors w-full"
+          >
+            Analyser ma couverture
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-8 pt-6 border-t border-baby-blue/30">
+      <p class="text-center text-sm text-bleu-turquin" style="font-family: Arial, sans-serif;">
+        Fait par <span class="font-semibold text-bleu-cobalt">Stratalys</span>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // État de l'application
+    const state = {
+      actesMedicaux: [],
+      selectedTypeDeSoin: '',
+      acteSelectionne: null,
+      loading: true,
+      resultat: null,
+      saisieManuelle: false,
+      tauxCouvertureMutuelle: 300,
+      tauxMutuelleManuel: false,
+    };
+
+    // Fonction de formatage Euro
+    function formatEuro(montant) {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(montant);
+    }
+
+    // Charger les actes médicaux - Ne fait rien, attend les données depuis Wix
+    function loadActesMedicaux() {
+      // Ne fait rien au démarrage, attend un message ACTES_DATA
+      console.log('En attente des données des actes médicaux depuis Wix...');
+    }
+
+    // Populer les types de soins
+    function populateTypesDeSoin() {
+      const select = document.getElementById('type-de-soin');
+      const types = [...new Set(state.actesMedicaux.map(a => a.type_de_soin).filter(t => t && t.trim()))].sort();
+      
+      select.innerHTML = '<option value="">Sélectionnez un type de soin</option>';
+      types.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        option.className = 'text-bleu-turquin';
+        select.appendChild(option);
+      });
+    }
+
+    // Populer les prestations selon le type de soin
+    function populatePrestations() {
+      const select = document.getElementById('acte');
+      const actesFiltres = state.actesMedicaux.filter(a => a.type_de_soin === state.selectedTypeDeSoin);
+      
+      select.innerHTML = '<option value="">Sélectionnez une prestation</option>';
+      actesFiltres.forEach(acte => {
+        const option = document.createElement('option');
+        option.value = acte.id;
+        option.textContent = acte.nom;
+        option.className = 'text-bleu-turquin';
+        select.appendChild(option);
+      });
+    }
+
+    // Afficher les informations de remboursement
+    function displayRemboursementInfo() {
+      if (!state.acteSelectionne) return;
+      
+      document.getElementById('bss-display').textContent = formatEuro(state.acteSelectionne.bss);
+      document.getElementById('taux-am-display').textContent = (state.acteSelectionne.txRemboursementAm * 100).toFixed(0) + '%';
+      document.getElementById('part-forfaitaire-display').textContent = formatEuro(state.acteSelectionne.partForfaitaire);
+    }
+
+    // Gérer le calcul - Collecte uniquement les données et les envoie au parent
+    function handleCalculer() {
+      // Validation
+      if (!state.acteSelectionne) {
+        alert('Veuillez sélectionner un acte médical');
+        return;
+      }
+
+      const prix = parseFloat(document.getElementById('prix').value);
+      if (isNaN(prix) || prix <= 0) {
+        alert('Veuillez entrer un prix valide');
+        return;
+      }
+
+      // Récupérer les valeurs du formulaire
+      let bss = state.acteSelectionne.bss;
+      let tauxAM = state.acteSelectionne.txRemboursementAm;
+      let partForfaitaire = state.acteSelectionne.partForfaitaire;
+
+      if (state.saisieManuelle) {
+        const bssValue = parseFloat(document.getElementById('bss-manuel').value);
+        const tauxAMValue = parseFloat(document.getElementById('taux-am-manuel').value);
+        const partForfaitaireValue = parseFloat(document.getElementById('part-forfaitaire-manuel').value);
+
+        if (isNaN(bssValue) || bssValue <= 0) {
+          alert('Veuillez entrer une base de remboursement valide');
+          return;
+        }
+        if (isNaN(tauxAMValue) || tauxAMValue < 0 || tauxAMValue > 100) {
+          alert('Veuillez entrer un taux de remboursement AM valide (entre 0 et 100)');
+          return;
+        }
+
+        bss = bssValue;
+        tauxAM = tauxAMValue / 100;
+        partForfaitaire = isNaN(partForfaitaireValue) ? 0 : partForfaitaireValue;
+      }
+
+      let tauxMutuelle = state.tauxCouvertureMutuelle;
+      if (state.tauxMutuelleManuel) {
+        const tauxManuelValue = parseFloat(document.getElementById('taux-mutuelle-manuel').value);
+        if (isNaN(tauxManuelValue) || tauxManuelValue <= 0) {
+          alert('Veuillez entrer un taux de mutuelle valide');
+          return;
+        }
+        tauxMutuelle = tauxManuelValue;
+      }
+
+      // Préparer les données à envoyer au parent (Wix)
+      const dataToSend = {
+        type: 'CALCUL_REQUEST',
+        prixPaye: prix,
+        acteId: state.acteSelectionne.id,
+        acteNom: state.acteSelectionne.nom,
+        bss: bss,
+        tauxRemboursementAm: tauxAM,
+        partForfaitaire: partForfaitaire,
+        tauxCouvertureMutuelle: tauxMutuelle,
+        // Données du formulaire (si disponibles)
+        nom: document.getElementById('nom')?.value || '',
+        prenom: document.getElementById('prenom')?.value || '',
+        email: document.getElementById('email')?.value || '',
+        telephone: document.getElementById('telephone')?.value || '',
+        metier: document.getElementById('metier')?.value || '',
+        message: document.getElementById('message')?.value || '',
+      };
+
+      // Envoyer les données au parent via postMessage
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(dataToSend, '*');
+      } else {
+        console.log('Données à envoyer:', dataToSend);
+      }
+
+      // Afficher l'état de chargement
+      const btn = document.getElementById('btn-calculer');
+      btn.textContent = 'Calcul en cours...';
+      btn.disabled = true;
+    }
+
+    // Écouter les messages de Wix
+    window.addEventListener('message', function(event) {
+      // Recevoir les données des actes médicaux depuis Wix
+      if (event.data && event.data.type === 'ACTES_DATA') {
+        state.actesMedicaux = event.data.actes || [];
+        populateTypesDeSoin();
+      }
+      
+      // Recevoir le résultat du calcul depuis Wix
+      if (event.data && event.data.type === 'CALCUL_SUCCESS') {
+        // Réactiver le bouton
+        const btn = document.getElementById('btn-calculer');
+        btn.textContent = 'Calculer le remboursement';
+        btn.disabled = false;
+
+        // Injecter les valeurs reçues
+        if (event.data.resultat) {
+          const resultat = event.data.resultat;
+          
+          // Afficher les résultats
+          document.getElementById('result-remb-am').textContent = formatEuro(resultat.remboursementAm);
+          document.getElementById('result-remb-mut').textContent = formatEuro(resultat.remboursementMutuelle);
+          document.getElementById('result-reste-charge').textContent = formatEuro(resultat.resteACharge);
+
+          // Changer le layout pour afficher les résultats
+          document.getElementById('simulateur-container').classList.remove('max-w-2xl');
+          document.getElementById('simulateur-container').classList.add('max-w-6xl');
+          document.getElementById('layout-container').classList.remove('justify-center');
+          document.getElementById('layout-container').classList.add('lg:flex-row', 'gap-8');
+          document.getElementById('form-column').classList.remove('w-full');
+          document.getElementById('form-column').classList.add('lg:w-5/12');
+          document.getElementById('result-column').classList.remove('hidden');
+        }
+      }
+    });
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+      // Écouteurs d'événements
+      document.getElementById('type-de-soin').addEventListener('change', function(e) {
+        state.selectedTypeDeSoin = e.target.value;
+        state.acteSelectionne = null;
+        state.resultat = null;
+        
+        if (state.selectedTypeDeSoin) {
+          document.getElementById('prestation-container').classList.remove('hidden');
+          populatePrestations();
+        } else {
+          document.getElementById('prestation-container').classList.add('hidden');
+        }
+        
+        // Réinitialiser l'affichage
+        document.getElementById('checkbox-manuel-container').classList.add('hidden');
+        document.getElementById('info-remboursement').classList.add('hidden');
+        document.getElementById('saisie-manuelle-container').classList.add('hidden');
+        document.getElementById('prix-container').classList.add('hidden');
+        document.getElementById('taux-mutuelle-container').classList.add('hidden');
+        document.getElementById('btn-calculer').classList.add('hidden');
+        document.getElementById('result-column').classList.add('hidden');
+      });
+
+      document.getElementById('acte').addEventListener('change', function(e) {
+        const acteId = parseInt(e.target.value);
+        if (isNaN(acteId)) return;
+        
+        state.acteSelectionne = state.actesMedicaux.find(a => a.id === acteId);
+        
+        if (state.acteSelectionne) {
+          document.getElementById('checkbox-manuel-container').classList.remove('hidden');
+          document.getElementById('prix-container').classList.remove('hidden');
+          document.getElementById('taux-mutuelle-container').classList.remove('hidden');
+          document.getElementById('btn-calculer').classList.remove('hidden');
+          
+          if (!state.saisieManuelle) {
+            document.getElementById('info-remboursement').classList.remove('hidden');
+            displayRemboursementInfo();
+          }
+        }
+      });
+
+      document.getElementById('saisie-manuelle').addEventListener('change', function(e) {
+        state.saisieManuelle = e.target.checked;
+        
+        if (state.saisieManuelle) {
+          document.getElementById('info-remboursement').classList.add('hidden');
+          document.getElementById('saisie-manuelle-container').classList.remove('hidden');
+        } else {
+          document.getElementById('info-remboursement').classList.remove('hidden');
+          document.getElementById('saisie-manuelle-container').classList.add('hidden');
+          displayRemboursementInfo();
+        }
+      });
+
+      document.getElementById('taux-mutuelle').addEventListener('change', function(e) {
+        if (e.target.value === 'manuel') {
+          state.tauxMutuelleManuel = true;
+          document.getElementById('taux-mutuelle-manuel-container').classList.remove('hidden');
+        } else {
+          state.tauxMutuelleManuel = false;
+          state.tauxCouvertureMutuelle = parseInt(e.target.value);
+          document.getElementById('taux-mutuelle-manuel-container').classList.add('hidden');
+        }
+      });
+
+      document.getElementById('btn-calculer').addEventListener('click', function() {
+        handleCalculer();
+      });
+
+      // Charger les actes médicaux
+      // Note: Vous devrez adapter l'URL de l'API selon votre configuration
+      // Pour Wix, vous pouvez aussi charger les données depuis votre API Next.js
+      loadActesMedicaux();
+    });
+  </script>
+</body>
+</html>
+

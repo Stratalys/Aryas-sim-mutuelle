@@ -5,6 +5,15 @@ import { fetchActesMedicaux } from '@/lib/supabase/actes';
 import type { ActeMedical } from '@/data/actesMedicaux';
 
 /**
+ * Headers CORS pour permettre l'accès depuis Wix
+ */
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+/**
  * Interface pour les données de la requête
  */
 interface CalculRequest {
@@ -45,7 +54,7 @@ export async function POST(request: NextRequest) {
           success: false, 
           error: 'Le prix payé est requis et doit être supérieur à 0' 
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -55,7 +64,7 @@ export async function POST(request: NextRequest) {
           success: false, 
           error: 'Le taux de couverture mutuelle est requis et doit être supérieur à 0' 
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -76,7 +85,7 @@ export async function POST(request: NextRequest) {
             success: false, 
             error: `Acte médical avec l'ID ${body.acteId} introuvable` 
           },
-          { status: 404 }
+          { status: 404, headers: corsHeaders }
         );
       }
 
@@ -96,7 +105,7 @@ export async function POST(request: NextRequest) {
           success: false, 
           error: 'Vous devez fournir soit un acteId, soit les données de l\'acte (bss, tauxRemboursementAm)' 
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -107,7 +116,7 @@ export async function POST(request: NextRequest) {
           success: false, 
           error: 'La base de remboursement (BSS) doit être supérieure à 0' 
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -117,7 +126,7 @@ export async function POST(request: NextRequest) {
           success: false, 
           error: 'Le taux de remboursement AM doit être entre 0 et 1 (ex: 0.7 pour 70%)' 
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -168,7 +177,7 @@ export async function POST(request: NextRequest) {
           ...response,
           leadSauvegarde: true,
           message: 'Calcul effectué et lead sauvegardé avec succès',
-        });
+        }, { headers: corsHeaders });
       } catch (error: any) {
         // Si la sauvegarde échoue, on retourne quand même le résultat du calcul
         console.error('Erreur lors de la sauvegarde du lead:', error);
@@ -177,11 +186,11 @@ export async function POST(request: NextRequest) {
           leadSauvegarde: false,
           warning: 'Calcul effectué mais erreur lors de la sauvegarde du lead',
           errorDetails: error?.message || 'Erreur inconnue',
-        });
+        }, { headers: corsHeaders });
       }
     }
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: corsHeaders });
   } catch (error: any) {
     console.error('Erreur dans l\'API /api/calculer:', error);
 
@@ -192,7 +201,7 @@ export async function POST(request: NextRequest) {
           success: false, 
           error: 'Format de requête invalide. Le body doit être du JSON valide.' 
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -203,9 +212,22 @@ export async function POST(request: NextRequest) {
         error: error?.message || 'Une erreur est survenue lors du calcul',
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
+}
+
+/**
+ * Route OPTIONS pour gérer les requêtes CORS preflight
+ */
+export async function OPTIONS(request: NextRequest) {
+  return NextResponse.json(
+    {},
+    {
+      status: 200,
+      headers: corsHeaders,
+    }
+  );
 }
 
 /**
@@ -266,6 +288,7 @@ export async function GET() {
         message: 'Calcul effectué et lead sauvegardé avec succès',
       },
     },
-  });
+  }, { headers: corsHeaders });
 }
+
 
