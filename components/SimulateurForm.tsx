@@ -605,6 +605,13 @@ export default function SimulateurForm() {
       ) : (
         /* Résultats et CTA - Affichés seulement s'il y a un résultat */
         <div className="w-full space-y-6">
+            {/* Message d'information */}
+            <div className="bg-baby-blue/20 border-l-4 border-bleu-cobalt rounded-md p-3">
+              <p className="text-sm text-bleu-turquin font-open">
+                <span className="font-semibold">ℹ️ Information :</span> Ce simulateur fournit une estimation indicative et ne remplace pas l&apos;avis d&apos;un professionnel de santé ou d&apos;un conseiller en assurance.
+              </p>
+            </div>
+
             {/* Carte de résultat */}
             <div className="bg-bleu-turquin rounded-xl shadow-md p-5">
               <h3 className="text-2xl font-nikkei font-bold text-white mb-4">
