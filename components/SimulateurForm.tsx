@@ -683,7 +683,7 @@ export default function SimulateurForm() {
             </div>
 
             <p className="text-bleu-turquin mb-6">
-              Laissez-moi vos coordonnées pour une analyse personnalisée et gratuite.
+              Entrez vos informations pour une analyse personnalisée et gratuite.
             </p>
 
             <form onSubmit={handleSubmitForm} className="space-y-4">
